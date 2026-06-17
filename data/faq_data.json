@@ -1,0 +1,26 @@
+[
+    {
+        "question": "What are your business hours?",
+        "answer": "We are open Monday to Friday from 8am to 5pm."
+    },
+    {
+        "question": "Where are you located?",
+        "answer": "We are located in 38 Banjo street, Kuils River industrial City"
+    },
+    {
+        "question": "Do you offer delivery?",
+        "answer": "Yes, we offer nationwide delivery."
+    },
+    {
+        "question": "How can I contact support?",
+        "answer": "You can contact us via WhatsApp on 0123456789."
+    },
+    {
+        "question": "Do you offer emergency service?",
+        "answer": "Yes, we operate 24 hours a day, 7 days a week.\n\n"
+    },
+    {
+        "question": "Where are you situated?",
+        "answer": "22 Bosch street Kuils River\n\n"
+    }
+]
