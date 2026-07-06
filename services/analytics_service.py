@@ -1,29 +1,37 @@
-import json
+from services.supabase_service import supabase
 
 
 def get_conversations():
 
-    with open("data/conversations.json", "r") as file:
-        return json.load(file)
+    response = (
+        supabase
+        .table("conversations")
+        .select("*")
+        .order("created_at", desc=False)
+        .execute()
+    )
+
+    return response.data
 
 
 def save_conversation(question, answer):
 
-    conversations = get_conversations()
 
-    conversations.append(
-        {
-            "question": question,
-            "answer": answer
-        }
+    response = (
+        supabase
+        .table("conversations")
+        .insert(
+            {
+                "question": question,
+                "answer": answer
+            }
+        )
+        .execute()
     )
 
-    with open("data/conversations.json", "w") as file:
-        json.dump(
-            conversations,
-            file,
-            indent=4
-        )
+
+
+    return response
 
 
 def get_most_asked_question():

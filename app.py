@@ -108,10 +108,12 @@ if user_question:
         user_question,
         faq_context
     )
+    st.write("Saving conversation...")
     save_conversation(
         user_question,
         answer
     )
+    st.write("Conversation saved.")
 
     st.session_state.messages.append(
         {
