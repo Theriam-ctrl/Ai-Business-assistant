@@ -6,5 +6,21 @@
     {
         "question": "What are your business hours?",
         "answer": "We are open Monday to Friday from 8am to 5pm."
+    },
+    {
+        "question": "Where are you located?",
+        "answer": "We are located in two places: our main office is at 38 Banjo street, Kuils River industrial City, and we also have a location at 22 Bosch street, Kuils River."
+    },
+    {
+        "question": "How can I contact support?",
+        "answer": "You can contact us via WhatsApp on 0123456789."
+    },
+    {
+        "question": "What are your business hours?",
+        "answer": "We are open Monday to Friday from 8am to 5pm."
+    },
+    {
+        "question": "Do you offer delivery?",
+        "answer": "Yes, we offer nationwide delivery."
     }
 ]

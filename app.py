@@ -280,7 +280,7 @@ if admin_mode:
             )
 
             st.write(
-                f"Time: {latest_lead['timestamp']}"
+                f"Time: {latest_lead['created_at']}"
             )
 
         leads = get_all_leads()

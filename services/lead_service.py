@@ -1,24 +1,31 @@
-import json
-from datetime import datetime
+from services.supabase_service import supabase
+
 
 def get_all_leads():
 
-    with open("data/leads.json", "r") as file:
-        return json.load(file)
+    response = (
+        supabase
+        .table("leads")
+        .select("*")
+        .order("created_at", desc=False)
+        .execute()
+    )
+
+    return response.data
 
 
 def save_lead(name, phone):
-    leads = get_all_leads()
 
-    leads.append(
-        {
-            "name": name,
-            "phone": phone,
-            "timestamp": datetime.now().strftime(
-                "%Y-%m-%d %H:%M:%S"
-            )
-        }
+    response = (
+        supabase
+        .table("leads")
+        .insert(
+            {
+                "name": name,
+                "phone": phone
+            }
+        )
+        .execute()
     )
 
-    with open("data/leads.json", "w") as file:
-        json.dump(leads, file, indent=4)
+    return response
