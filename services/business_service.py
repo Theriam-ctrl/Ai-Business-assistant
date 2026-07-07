@@ -1,7 +1,12 @@
 from services.supabase_service import supabase
 
 
-def create_business(business_name, email, password):
+def create_business(
+    business_name,
+    owner_name,
+    email,
+    password
+):
 
     response = (
         supabase
@@ -9,6 +14,7 @@ def create_business(business_name, email, password):
         .insert(
             {
                 "business_name": business_name,
+                "owner_name": owner_name,
                 "email": email,
                 "password": password
             }
@@ -25,7 +31,7 @@ def get_all_businesses():
         supabase
         .table("businesses")
         .select("*")
-        .order("created_at", desc=False)
+        .order("created_at")
         .execute()
     )
 
