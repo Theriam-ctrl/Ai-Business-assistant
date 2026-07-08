@@ -2,10 +2,11 @@ from services.supabase_service import supabase
 
 
 def create_business(
+    user_id,
     business_name,
     owner_name,
     email,
-    password
+    phone=""
 ):
 
     response = (
@@ -13,10 +14,11 @@ def create_business(
         .table("businesses")
         .insert(
             {
+                "user_id": user_id,
                 "business_name": business_name,
                 "owner_name": owner_name,
                 "email": email,
-                "password": password
+                "phone": phone
             }
         )
         .execute()

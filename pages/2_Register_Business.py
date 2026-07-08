@@ -1,5 +1,6 @@
 from services.business_service import create_business
 import streamlit as st
+from services.auth_service import register_user
 
 st.title("🏢 Register Your Business")
 
@@ -47,13 +48,32 @@ if st.button("Create Account"):
 
     else:
 
-        create_business(
-            business_name,
-            owner_name,
-            email,
-            password
-        )
+        try:
 
-        st.success(
-            "Business registered successfully!"
-        )
+            auth = register_user(
+                email,
+                password
+            )
+
+            if auth.user:
+
+                create_business(
+                    auth.user.id,
+                    business_name,
+                    owner_name,
+                    email
+                )
+
+                st.success(
+                    "Business registered successfully!"
+                )
+
+            else:
+
+                st.error(
+                    "Registration failed."
+                )
+
+        except Exception as e:
+
+            st.error(str(e))
