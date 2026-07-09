@@ -38,3 +38,15 @@ def get_all_businesses():
     )
 
     return response.data
+def get_business_by_user(user_id):
+
+    response = (
+        supabase
+        .table("businesses")
+        .select("*")
+        .eq("user_id", user_id)
+        .single()
+        .execute()
+    )
+
+    return response.data

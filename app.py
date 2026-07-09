@@ -15,7 +15,10 @@ from services.faq_service import (
     update_faq
 )
 from services.ai_service import get_ai_response
-from services.lead_service import save_lead, get_all_leads
+from services.lead_service import (
+    save_lead,
+    get_business_leads
+)
 from services.config_service import load_config
 from services.email_service import send_lead_notification
 from services.analytics_service import (
@@ -141,12 +144,30 @@ if st.button("Submit"):
 
     else:
 
-        save_lead(name, phone)
+        business = st.session_state.get("business")
 
-        send_lead_notification(
-            name,
-            phone
-        )
+        if business:
+
+            save_lead(
+                business["id"],
+                name,
+                phone
+            )
+
+            send_lead_notification(
+                name,
+                phone
+            )
+
+            st.success(
+                "Your request has been submitted."
+            )
+
+        else:
+
+            st.error(
+                "No business is currently logged in."
+            )
 
 
 

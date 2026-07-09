@@ -1,6 +1,7 @@
 import streamlit as st
 
 from services.auth_service import login_user
+from services.business_service import get_business_by_user
 
 st.title("🔐 Business Login")
 
@@ -32,8 +33,29 @@ if st.button("Login"):
 
             if auth.user:
 
+                st.session_state["logged_in"] = True
+                st.session_state["user"] = auth.user
+
+                business = get_business_by_user(
+                    auth.user.id
+                )
+
+                st.session_state["business"] = business
+
                 st.success(
                     "Login Successful!"
+                )
+
+                business = st.session_state["business"]
+
+                st.success("✅ Login Successful!")
+
+                st.subheader(
+                    f"Welcome, {business['owner_name']}!"
+                )
+
+                st.write(
+                    f"🏢 {business['business_name']}"
                 )
 
             else:
