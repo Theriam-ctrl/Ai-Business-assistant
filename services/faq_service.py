@@ -1,10 +1,18 @@
-import json
+from services.supabase_service import supabase
 
 
-def load_faqs():
+def load_faqs(business_id):
 
-    with open("data/faq_data.json", "r") as file:
-        return json.load(file)
+    response = (
+        supabase
+        .table("faqs")
+        .select("*")
+        .eq("business_id", business_id)
+        .order("created_at")
+        .execute()
+    )
+
+    return response.data
 
 
 def build_faq_context(faq_data):
@@ -17,42 +25,58 @@ def build_faq_context(faq_data):
     )
 
 
-def add_faq(question, answer):
+def add_faq(
+    business_id,
+    question,
+    answer
+):
 
-    with open("data/faq_data.json", "r") as file:
-        faqs = json.load(file)
-
-    faqs.append(
-        {
-            "question": question,
-            "answer": answer
-        }
+    response = (
+        supabase
+        .table("faqs")
+        .insert(
+            {
+                "business_id": business_id,
+                "question": question,
+                "answer": answer
+            }
+        )
+        .execute()
     )
 
-    with open("data/faq_data.json", "w") as file:
-        json.dump(faqs, file, indent=4)
+    return response
 
 
-def delete_faq(index):
+def delete_faq(faq_id):
 
-    with open("data/faq_data.json", "r") as file:
-        faqs = json.load(file)
+    response = (
+        supabase
+        .table("faqs")
+        .delete()
+        .eq("id", faq_id)
+        .execute()
+    )
 
-    faqs.pop(index)
-
-    with open("data/faq_data.json", "w") as file:
-        json.dump(faqs, file, indent=4)
+    return response
 
 
-def update_faq(index, question, answer):
+def update_faq(
+    faq_id,
+    question,
+    answer
+):
 
-    with open("data/faq_data.json", "r") as file:
-        faqs = json.load(file)
+    response = (
+        supabase
+        .table("faqs")
+        .update(
+            {
+                "question": question,
+                "answer": answer
+            }
+        )
+        .eq("id", faq_id)
+        .execute()
+    )
 
-    faqs[index] = {
-        "question": question,
-        "answer": answer
-    }
-
-    with open("data/faq_data.json", "w") as file:
-        json.dump(faqs, file, indent=4)
+    return response
