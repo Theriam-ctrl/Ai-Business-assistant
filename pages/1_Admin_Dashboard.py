@@ -65,8 +65,8 @@ new_answer = st.text_area(
 if st.button("Add FAQ"):
 
     if new_question and new_answer:
-
         add_faq(
+            business["id"],
             new_question,
             new_answer
         )
@@ -79,7 +79,9 @@ if st.button("Add FAQ"):
 
 st.subheader("📖 Current FAQs")
 
-faqs = load_faqs()
+faqs = load_faqs(
+    business["id"]
+)
 
 for index, faq in enumerate(faqs):
 
@@ -106,9 +108,8 @@ for index, faq in enumerate(faqs):
             "💾 Save Changes",
             key=f"save_{index}"
         ):
-
             update_faq(
-                index,
+                faq["id"],
                 edited_question,
                 edited_answer
             )
@@ -123,8 +124,9 @@ for index, faq in enumerate(faqs):
             "🗑 Delete FAQ",
             key=f"delete_{index}"
         ):
-
-            delete_faq(index)
+            delete_faq(
+                faq["id"]
+            )
 
             st.rerun()
 
