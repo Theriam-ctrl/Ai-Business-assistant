@@ -13,159 +13,198 @@ from services.analytics_service import (
     get_most_asked_question
 )
 
-from services.lead_service import get_all_leads
+from services.lead_service import (
+    get_business_leads
+)
+
 from services.config_service import load_config
+
+from services.session_service import (
+    is_logged_in,
+    get_current_business
+)
 
 config = load_config()
 
+if not is_logged_in():
+
+    st.warning(
+        "Please log in to access the Admin Dashboard."
+    )
+
+    st.stop()
+
+business = get_current_business()
+
 st.title("🛠 Admin Dashboard")
 
-password = st.text_input(
-    "Admin Password",
-    type="password"
+st.success(
+    f"Welcome, {business['owner_name']}!"
 )
 
-if password == config["admin_password"]:
+st.caption(
+    f"🏢 {business['business_name']}"
+)
 
-    st.success("Access Granted")
+st.divider()
 
-    st.divider()
+# ==========================
+# FAQ MANAGER
+# ==========================
 
-    # FAQ Manager
+st.subheader("📚 FAQ Manager")
 
-    st.subheader("📚 FAQ Manager")
+new_question = st.text_input(
+    "Question"
+)
 
-    new_question = st.text_input("Question")
-    new_answer = st.text_area("Answer")
+new_answer = st.text_area(
+    "Answer"
+)
 
-    if st.button("Add FAQ"):
+if st.button("Add FAQ"):
 
-        if new_question and new_answer:
+    if new_question and new_answer:
 
-            add_faq(
-                new_question,
-                new_answer
+        add_faq(
+            new_question,
+            new_answer
+        )
+
+        st.success(
+            "FAQ Added Successfully"
+        )
+
+        st.rerun()
+
+st.subheader("📖 Current FAQs")
+
+faqs = load_faqs()
+
+for index, faq in enumerate(faqs):
+
+    st.write(f"**Q:** {faq['question']}")
+    st.write(f"**A:** {faq['answer']}")
+
+    with st.expander(
+        f"✏️ Edit FAQ #{index}"
+    ):
+
+        edited_question = st.text_input(
+            "Question",
+            value=faq["question"],
+            key=f"question_{index}"
+        )
+
+        edited_answer = st.text_area(
+            "Answer",
+            value=faq["answer"],
+            key=f"answer_{index}"
+        )
+
+        if st.button(
+            "💾 Save Changes",
+            key=f"save_{index}"
+        ):
+
+            update_faq(
+                index,
+                edited_question,
+                edited_answer
             )
 
-            st.success("FAQ Added Successfully")
+            st.success(
+                "FAQ Updated"
+            )
 
             st.rerun()
 
-    st.subheader("📖 Current FAQs")
+        if st.button(
+            "🗑 Delete FAQ",
+            key=f"delete_{index}"
+        ):
 
-    faqs = load_faqs()
+            delete_faq(index)
 
-    for index, faq in enumerate(faqs):
+            st.rerun()
 
-        st.write(f"**Q:** {faq['question']}")
-        st.write(f"**A:** {faq['answer']}")
+    st.divider()
 
-        with st.expander(f"✏️ Edit FAQ #{index}"):
+# ==========================
+# ANALYTICS
+# ==========================
 
-            edited_question = st.text_input(
-                "Question",
-                value=faq["question"],
-                key=f"question_{index}"
-            )
+st.subheader("📊 Analytics")
 
-            edited_answer = st.text_area(
-                "Answer",
-                value=faq["answer"],
-                key=f"answer_{index}"
-            )
+conversations = get_conversations()
 
-            if st.button(
-                "💾 Save Changes",
-                key=f"save_{index}"
-            ):
+st.metric(
+    "Total Conversations",
+    len(conversations)
+)
 
-                update_faq(
-                    index,
-                    edited_question,
-                    edited_answer
-                )
+st.metric(
+    "Most Asked Question",
+    get_most_asked_question()
+)
 
-                st.success("FAQ Updated")
+leads = get_business_leads(
+    business["id"]
+)
 
-                st.rerun()
+st.metric(
+    "Total Leads",
+    len(leads)
+)
 
-            if st.button(
-                "🗑 Delete FAQ",
-                key=f"delete_{index}"
-            ):
+# ==========================
+# LATEST LEAD
+# ==========================
 
-                delete_faq(index)
+if leads:
 
-                st.rerun()
+    latest_lead = leads[-1]
 
-        st.divider()
+    st.subheader("🔥 Latest Lead")
 
-    # Analytics
-
-    st.subheader("📊 Analytics")
-
-    conversations = get_conversations()
-
-    st.metric(
-        "Total Conversations",
-        len(conversations)
+    st.write(
+        f"Name: {latest_lead['name']}"
     )
 
-    st.metric(
-        "Most Asked Question",
-        get_most_asked_question()
+    st.write(
+        f"Phone: {latest_lead['phone']}"
     )
 
-    leads = get_all_leads()
-
-    st.metric(
-        "Total Leads",
-        len(leads)
+    st.write(
+        f"Time: {latest_lead['created_at']}"
     )
 
-    # Latest Lead
+else:
 
-    if leads:
+    st.info(
+        "No leads captured yet."
+    )
 
-        latest_lead = leads[-1]
+# ==========================
+# LEADS TABLE
+# ==========================
 
-        st.subheader("🔥 Latest Lead")
+st.subheader("📋 All Leads")
 
-        st.write(f"Name: {latest_lead['name']}")
-        st.write(f"Phone: {latest_lead['phone']}")
-        st.write(f"Time: {latest_lead['created_at']}")
-        # Download Leads
+lead_df = pd.DataFrame(leads)
 
-        df = pd.DataFrame(leads)
+st.dataframe(
+    lead_df,
+    use_container_width=True
+)
 
-        csv = df.to_csv(index=False)
+csv = lead_df.to_csv(
+    index=False
+)
 
-        st.download_button(
-            label="📥 Download Leads CSV",
-            data=csv,
-            file_name="leads.csv",
-            mime="text/csv"
-        )
-
-        st.table(leads)
-        # Recent Conversations
-
-        st.subheader("💬 Recent Conversations")
-
-        if conversations:
-
-            for conversation in reversed(conversations[-5:]):
-                with st.expander(
-                        conversation["question"]
-                ):
-                    st.write(
-                        conversation["answer"]
-                    )
-
-        else:
-
-            st.info("No conversations yet.")
-
-elif password:
-
-    st.error("Incorrect Password")
+st.download_button(
+    "⬇ Download Leads CSV",
+    csv,
+    "leads.csv",
+    "text/csv"
+)
