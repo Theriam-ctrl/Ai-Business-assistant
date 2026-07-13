@@ -9,6 +9,13 @@ def create_business(
     phone=""
 ):
 
+    slug = (
+        business_name
+        .lower()
+        .strip()
+        .replace(" ", "-")
+    )
+
     response = (
         supabase
         .table("businesses")
@@ -18,7 +25,10 @@ def create_business(
                 "business_name": business_name,
                 "owner_name": owner_name,
                 "email": email,
-                "phone": phone
+                "phone": phone,
+                "welcome_message": "",
+                "ai_personality": "Professional",
+                "slug": slug
             }
         )
         .execute()
@@ -38,6 +48,8 @@ def get_all_businesses():
     )
 
     return response.data
+
+
 def get_business_by_user(user_id):
 
     response = (
@@ -50,3 +62,56 @@ def get_business_by_user(user_id):
     )
 
     return response.data
+
+
+def get_business_by_slug(slug):
+
+    response = (
+        supabase
+        .table("businesses")
+        .select("*")
+        .eq("slug", slug)
+        .limit(1)
+        .execute()
+    )
+
+    if response.data:
+        return response.data[0]
+
+    return None
+
+
+def update_business(
+    business_id,
+    business_name,
+    owner_name,
+    phone,
+    welcome_message,
+    ai_personality
+):
+
+    slug = (
+        business_name
+        .lower()
+        .strip()
+        .replace(" ", "-")
+    )
+
+    response = (
+        supabase
+        .table("businesses")
+        .update(
+            {
+                "business_name": business_name,
+                "owner_name": owner_name,
+                "phone": phone,
+                "welcome_message": welcome_message,
+                "ai_personality": ai_personality,
+                "slug": slug
+            }
+        )
+        .eq("id", business_id)
+        .execute()
+    )
+
+    return response
