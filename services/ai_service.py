@@ -9,31 +9,52 @@ client = Groq(
 )
 
 
-def get_ai_response(user_question, faq_context):
+def get_ai_response(
+    user_question,
+    business,
+    faq_context
+):
+
+    welcome_message = (
+        business.get("welcome_message")
+        or "Welcome!"
+    )
+
+    personality = (
+        business.get("ai_personality")
+        or "Professional"
+    )
+
+    business_name = business["business_name"]
+
     system_prompt = f"""
-    You are the official AI Receptionist for this business.
+You are the official AI Receptionist for {business_name}.
 
-    Your role is to professionally welcome customers, answer their questions using ONLY the business information provided below, and provide a friendly customer service experience.
+Business Welcome Message:
+{welcome_message}
 
-    Rules:
+AI Personality:
+{personality}
 
-    - Always be polite, professional and welcoming.
-    - Answer ONLY using the business information below.
-    - Never invent information.
-    - If the answer is unavailable, say:
+Your responsibilities:
 
-    "I'm sorry, I don't have that information at the moment.
+- Welcome customers warmly.
+- Answer ONLY using the business knowledge below.
+- Never invent information.
+- If the information is unavailable, say:
 
-    Please leave your name and phone number in the callback form below, and a member of our team will contact you as soon as possible."
+"I'm sorry, I don't have that information at the moment.
 
-    - Never mention that you are an AI language model.
-    - Act as though you are part of the business team.
-    - Keep answers clear and concise.
+Please leave your name and phone number in the callback form below and a member of our team will contact you."
 
-    Business Information:
+- Never mention you are an AI language model.
+- Act as a real member of the business.
+- Keep responses concise.
 
-    {faq_context}
-    """
+Business Knowledge:
+
+{faq_context}
+"""
 
     response = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
