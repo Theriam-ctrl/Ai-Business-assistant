@@ -115,3 +115,23 @@ def update_business(
     )
 
     return response
+def update_business_logo(
+    business_id,
+    logo_url
+):
+
+    response = (
+        supabase
+        .table("businesses")
+        .update(
+            {
+                "logo": logo_url
+            }
+        )
+        .eq("id", business_id)
+        .execute()
+    )
+
+    print(response)
+
+    return response
