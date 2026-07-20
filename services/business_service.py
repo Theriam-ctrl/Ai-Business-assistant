@@ -8,6 +8,9 @@ def create_business(
     email,
     phone=""
 ):
+    """
+    Creates a new business after successful registration.
+    """
 
     slug = (
         business_name
@@ -28,7 +31,12 @@ def create_business(
                 "phone": phone,
                 "welcome_message": "",
                 "ai_personality": "Professional",
-                "slug": slug
+                "slug": slug,
+
+                # Onboarding
+                "industry": "",
+                "setup_step": 1,
+                "onboarding_complete": False
             }
         )
         .execute()
@@ -38,6 +46,9 @@ def create_business(
 
 
 def get_all_businesses():
+    """
+    Returns every registered business.
+    """
 
     response = (
         supabase
@@ -51,6 +62,9 @@ def get_all_businesses():
 
 
 def get_business_by_user(user_id):
+    """
+    Returns the business belonging to the logged-in user.
+    """
 
     response = (
         supabase
@@ -65,6 +79,9 @@ def get_business_by_user(user_id):
 
 
 def get_business_by_slug(slug):
+    """
+    Used by the public receptionist.
+    """
 
     response = (
         supabase
@@ -89,6 +106,9 @@ def update_business(
     welcome_message,
     ai_personality
 ):
+    """
+    Updates the business profile.
+    """
 
     slug = (
         business_name
@@ -115,10 +135,15 @@ def update_business(
     )
 
     return response
+
+
 def update_business_logo(
     business_id,
     logo_url
 ):
+    """
+    Updates the business logo.
+    """
 
     response = (
         supabase
@@ -132,6 +157,33 @@ def update_business_logo(
         .execute()
     )
 
-    print(response)
+    return response
+
+
+def complete_onboarding(
+    business_id,
+    industry,
+    welcome_message,
+    ai_personality
+):
+    """
+    Marks onboarding as complete.
+    """
+
+    response = (
+        supabase
+        .table("businesses")
+        .update(
+            {
+                "industry": industry,
+                "welcome_message": welcome_message,
+                "ai_personality": ai_personality,
+                "setup_step": 6,
+                "onboarding_complete": True
+            }
+        )
+        .eq("id", business_id)
+        .execute()
+    )
 
     return response

@@ -1,212 +1,179 @@
 import streamlit as st
-import pandas as pd
-
-from services.faq_service import (
-    load_faqs,
-    add_faq,
-    update_faq,
-    delete_faq
-)
-
-from services.analytics_service import (
-    get_conversations,
-    get_most_asked_question
-)
-
-from services.lead_service import (
-    get_business_leads
-)
-
-from services.config_service import load_config
 
 from services.session_service import (
     is_logged_in,
     get_current_business
 )
 
-config = load_config()
+from services.dashboard_service import (
+    get_dashboard_stats,
+    get_recent_leads,
+    get_recent_conversations
+)
+
+from services.analytics_service import (
+    get_weekly_conversations
+)
+
+from ui.dashboard_cards import dashboard_card
+from ui.insights import show_ai_insights
+from ui.charts import weekly_conversations_chart
+
+st.set_page_config(
+    page_title="Dashboard",
+    page_icon="📊",
+    layout="wide"
+)
 
 if not is_logged_in():
 
-    st.warning(
-        "Please log in to access the Admin Dashboard."
-    )
-
+    st.warning("Please log in.")
     st.stop()
 
 business = get_current_business()
 
-st.title("🛠 Admin Dashboard")
-
-st.success(
-    f"Welcome, {business['owner_name']}!"
+stats = get_dashboard_stats(
+    business["id"]
 )
 
-st.caption(
-    f"🏢 {business['business_name']}"
+recent_leads = get_recent_leads(
+    business["id"]
+)
+
+recent_conversations = get_recent_conversations(
+    business["id"]
+)
+
+weekly_data = get_weekly_conversations(
+    business["id"]
+)
+
+# =====================================================
+
+st.title("📊 Dashboard")
+
+st.caption("Theriam AI Receptionist")
+
+st.markdown(f"## {business['business_name']}")
+
+st.success("🟢 Receptionist Online")
+
+st.divider()
+
+# =====================================================
+# Dashboard Cards
+# =====================================================
+
+c1, c2, c3, c4 = st.columns(4)
+
+with c1:
+    dashboard_card(
+        "Leads",
+        stats["leads"],
+        "👥"
+    )
+
+with c2:
+    dashboard_card(
+        "FAQs",
+        stats["faqs"],
+        "📚"
+    )
+
+with c3:
+    dashboard_card(
+        "Chats",
+        stats["conversations"],
+        "💬"
+    )
+
+with c4:
+    dashboard_card(
+        "Health",
+        "96%",
+        "⭐"
+    )
+
+st.divider()
+
+# =====================================================
+# Analytics
+# =====================================================
+
+weekly_conversations_chart(
+    weekly_data
 )
 
 st.divider()
 
-# ==========================
-# FAQ MANAGER
-# ==========================
+# =====================================================
+# Main Layout
+# =====================================================
 
-st.subheader("📚 FAQ Manager")
+left, right = st.columns([2, 1])
 
-new_question = st.text_input(
-    "Question"
-)
+with left:
 
-new_answer = st.text_area(
-    "Answer"
-)
+    st.subheader("⚡ Recent Activity")
 
-if st.button("Add FAQ"):
+    if recent_conversations:
 
-    if new_question and new_answer:
-        add_faq(
-            business["id"],
-            new_question,
-            new_answer
+        for conversation in recent_conversations:
+
+            with st.container():
+
+                st.markdown(
+                    f"**❓ {conversation['question']}**"
+                )
+
+                st.caption(
+                    conversation["created_at"]
+                )
+
+                st.write(
+                    conversation["answer"]
+                )
+
+                st.divider()
+
+    else:
+
+        st.info(
+            "No conversations yet."
         )
 
-        st.success(
-            "FAQ Added Successfully"
-        )
+with right:
 
-        st.rerun()
+    st.subheader("📞 Recent Leads")
 
-st.subheader("📖 Current FAQs")
+    if recent_leads:
 
-faqs = load_faqs(
-    business["id"]
-)
+        for lead in recent_leads:
 
-for index, faq in enumerate(faqs):
-
-    st.write(f"**Q:** {faq['question']}")
-    st.write(f"**A:** {faq['answer']}")
-
-    with st.expander(
-        f"✏️ Edit FAQ #{index}"
-    ):
-
-        edited_question = st.text_input(
-            "Question",
-            value=faq["question"],
-            key=f"question_{index}"
-        )
-
-        edited_answer = st.text_area(
-            "Answer",
-            value=faq["answer"],
-            key=f"answer_{index}"
-        )
-
-        if st.button(
-            "💾 Save Changes",
-            key=f"save_{index}"
-        ):
-            update_faq(
-                faq["id"],
-                edited_question,
-                edited_answer
+            st.markdown(
+                f"**{lead['name']}**"
             )
 
-            st.success(
-                "FAQ Updated"
+            st.caption(
+                lead["phone"]
             )
 
-            st.rerun()
+            st.divider()
 
-        if st.button(
-            "🗑 Delete FAQ",
-            key=f"delete_{index}"
-        ):
-            delete_faq(
-                faq["id"]
-            )
+    else:
 
-            st.rerun()
+        st.info(
+            "No leads yet."
+        )
 
-    st.divider()
+    st.subheader("🤖 Receptionist")
 
-# ==========================
-# ANALYTICS
-# ==========================
-
-st.subheader("📊 Analytics")
-
-conversations = get_conversations()
-
-st.metric(
-    "Total Conversations",
-    len(conversations)
-)
-
-st.metric(
-    "Most Asked Question",
-    get_most_asked_question()
-)
-
-leads = get_business_leads(
-    business["id"]
-)
-
-st.metric(
-    "Total Leads",
-    len(leads)
-)
-
-# ==========================
-# LATEST LEAD
-# ==========================
-
-if leads:
-
-    latest_lead = leads[-1]
-
-    st.subheader("🔥 Latest Lead")
-
-    st.write(
-        f"Name: {latest_lead['name']}"
+    st.code(
+        f"http://localhost:8501/?slug={business['slug']}"
     )
 
-    st.write(
-        f"Phone: {latest_lead['phone']}"
-    )
+    show_ai_insights(stats)
 
-    st.write(
-        f"Time: {latest_lead['created_at']}"
-    )
+st.divider()
 
-else:
-
-    st.info(
-        "No leads captured yet."
-    )
-
-# ==========================
-# LEADS TABLE
-# ==========================
-
-st.subheader("📋 All Leads")
-
-lead_df = pd.DataFrame(leads)
-
-st.dataframe(
-    lead_df,
-    use_container_width=True
-)
-
-csv = lead_df.to_csv(
-    index=False
-)
-
-st.download_button(
-    "⬇ Download Leads CSV",
-    csv,
-    "leads.csv",
-    "text/csv"
-)
+st.caption("Theriam AI Receptionist • v0.9.0")
