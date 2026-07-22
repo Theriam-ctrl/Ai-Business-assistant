@@ -69,6 +69,8 @@ if st.button(
             st.session_state["logged_in"] = True
             st.session_state["user"] = auth.user
             st.session_state["business"] = business
+            st.write("Auth User ID:", auth.user.id)
+            st.write("Business User ID:", business["user_id"])
 
             st.success(
                 "✅ Login Successful!"

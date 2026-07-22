@@ -3,14 +3,12 @@ from services.supabase_service import supabase
 
 def register_user(email, password):
 
-    response = supabase.auth.sign_up(
+    return supabase.auth.sign_up(
         {
             "email": email,
             "password": password
         }
     )
-
-    return response
 
 
 def login_user(email, password):
@@ -21,6 +19,14 @@ def login_user(email, password):
             "password": password
         }
     )
+
+    print("\n========== SESSION ==========")
+
+    session = supabase.auth.get_session()
+
+    print(session)
+
+    print("=============================\n")
 
     return response
 
