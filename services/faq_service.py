@@ -31,7 +31,7 @@ def add_faq(
     answer
 ):
 
-    response = (
+    return (
         supabase
         .table("faqs")
         .insert(
@@ -44,21 +44,6 @@ def add_faq(
         .execute()
     )
 
-    return response
-
-
-def delete_faq(faq_id):
-
-    response = (
-        supabase
-        .table("faqs")
-        .delete()
-        .eq("id", faq_id)
-        .execute()
-    )
-
-    return response
-
 
 def update_faq(
     faq_id,
@@ -66,7 +51,7 @@ def update_faq(
     answer
 ):
 
-    response = (
+    return (
         supabase
         .table("faqs")
         .update(
@@ -79,4 +64,29 @@ def update_faq(
         .execute()
     )
 
-    return response
+
+def delete_faq(faq_id):
+
+    return (
+        supabase
+        .table("faqs")
+        .delete()
+        .eq("id", faq_id)
+        .execute()
+    )
+
+
+def delete_all_faqs(
+    business_id
+):
+
+    return (
+        supabase
+        .table("faqs")
+        .delete()
+        .eq(
+            "business_id",
+            business_id
+        )
+        .execute()
+    )

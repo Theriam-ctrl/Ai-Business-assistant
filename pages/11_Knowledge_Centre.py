@@ -2,8 +2,16 @@ import streamlit as st
 
 from services.website_service import fetch_website
 from services.knowledge_service import analyse_business
-from services.business_knowledge_service import save_business_knowledge
-
+from services.business_knowledge_service import (
+    save_business_knowledge,
+    get_business_knowledge
+)
+from services.faq_generator_service import (
+    generate_faqs
+)
+from services.faq_service import (
+    add_faq
+)
 business = st.session_state.get("business")
 
 if not business:
@@ -22,9 +30,10 @@ st.caption(
 
 st.divider()
 
-tab1, tab2, tab3, tab4 = st.tabs(
+tab1, tab2, tab3, tab4, tab5 = st.tabs(
     [
         "🌐 Website",
+        "🤖 AI FAQs",
         "📚 FAQs",
         "📄 Documents",
         "📝 Notes"
@@ -159,14 +168,79 @@ with tab1:
                 )
 
 # =====================================================
-# FAQS
+# AI FAQ GENERATOR
 # =====================================================
 
 with tab2:
 
-    st.info(
-        "Automatic FAQ generation coming next."
+    st.subheader("🤖 AI FAQ Generator")
+
+    st.write(
+        """
+Generate professional FAQs automatically from your business knowledge.
+
+The AI will create 20 customer questions and answers which you can
+review before publishing them to your AI Receptionist.
+"""
     )
+
+    knowledge = get_business_knowledge(
+        business["id"]
+    )
+
+    if not knowledge:
+
+        st.warning(
+            "Please import your website first."
+        )
+
+    else:
+
+        if st.button(
+            "Generate FAQs",
+            use_container_width=True
+        ):
+
+            with st.spinner(
+                "Generating FAQs..."
+            ):
+
+                faqs = generate_faqs(
+                    knowledge
+                )
+
+                st.session_state["generated_faqs"] = faqs
+
+        if "generated_faqs" in st.session_state:
+
+            st.success(
+                f"{len(st.session_state['generated_faqs'])} FAQs generated."
+            )
+
+            for index, faq in enumerate(
+                st.session_state["generated_faqs"]
+            ):
+
+                with st.expander(
+                    f"FAQ {index + 1}"
+                ):
+
+                    question = st.text_input(
+                        "Question",
+                        value=faq["question"],
+                        key=f"q_{index}"
+                    )
+
+                    answer = st.text_area(
+                        "Answer",
+                        value=faq["answer"],
+                        key=f"a_{index}"
+                    )
+
+                    st.session_state["generated_faqs"][index] = {
+                        "question": question,
+                        "answer": answer
+                    }
 
 # =====================================================
 # DOCUMENTS

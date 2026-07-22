@@ -1,3 +1,4 @@
+import json
 import os
 
 from groq import Groq
@@ -11,32 +12,46 @@ client = Groq(
 
 
 def generate_faqs(knowledge):
+    """
+    Generates 20 FAQs from structured business knowledge.
+    Returns a Python list of dictionaries.
+    """
 
     prompt = f"""
-You are creating FAQs for an AI Receptionist.
+You are an expert customer support consultant.
 
-Using the business information below, generate 20 frequently asked questions.
+Using the business information below, generate the 20 most common customer questions.
 
-Requirements:
+Rules:
 
-- Return exactly 20 FAQs.
-- Each FAQ must have:
-  Question:
-  Answer:
+- Return EXACTLY 20 FAQs.
+- Return ONLY valid JSON.
+- Do NOT use markdown.
+- Do NOT explain anything.
+- Do NOT include text before or after the JSON.
+- Every FAQ must contain:
+    - question
+    - answer
 
-- Questions should be realistic.
-- Answers should be professional.
-- Do not invent information that is not supported by the business description.
-- Use a friendly business tone.
+Return this exact structure:
 
-Business Information:
+[
+    {{
+        "question": "",
+        "answer": ""
+    }}
+]
 
-{knowledge}
+Business Knowledge:
+
+{json.dumps(knowledge, indent=2)}
 """
 
     response = client.chat.completions.create(
 
         model="llama-3.3-70b-versatile",
+
+        temperature=0.2,
 
         messages=[
             {
@@ -46,4 +61,41 @@ Business Information:
         ]
     )
 
-    return response.choices[0].message.content
+    content = response.choices[0].message.content.strip()
+
+    # Remove markdown if the AI adds it
+    content = content.replace("```json", "")
+    content = content.replace("```", "")
+    content = content.strip()
+
+    # Extract JSON array
+    start = content.find("[")
+    end = content.rfind("]") + 1
+
+    if start == -1 or end == 0:
+
+        raise Exception(
+            f"AI returned invalid FAQ JSON:\n\n{content}"
+        )
+
+    json_text = content[start:end]
+
+    try:
+
+        faqs = json.loads(json_text)
+
+    except json.JSONDecodeError as e:
+
+        raise Exception(
+            f"""
+FAQ JSON Parse Error
+
+{e}
+
+Returned by AI:
+
+{content}
+"""
+        )
+
+    return faqs
